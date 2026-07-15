@@ -1,5 +1,6 @@
 import BicycleIcon from './bike.svg'
 import CarIcon from './car.svg'
+import CarRiskIcon from './car_risk.svg'
 import FootIcon from './foot.svg'
 import HikeIcon from './hike.svg'
 import MotorcycleIcon from './motorcycle.svg'
@@ -14,7 +15,8 @@ import QuestionMarkIcon from './question_mark.svg'
 // ALL AVAILABLE ICONS
 // every svg gets mapped to a key, so icons can be easily added
 export const icons: Record<string, any> = {
-    car: CarIcon,
+    car: CarRiskIcon, // crash-risk-aware car profile (badged)
+    car_plain: CarIcon, // no-risk baseline; exact key so it gets the plain car, no batch number
     small_truck: SmallTruckIcon,
     truck: TruckIcon,
     scooter: ScooterIcon,

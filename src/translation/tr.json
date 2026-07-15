@@ -36,6 +36,7 @@
 "custom_model_enabled":"Custom Model Active",
 "settings":"Settings",
 "settings_close":"Close",
+"minimize_crash_risk_example":"Minimize Crash Risk",
 "exclude_motorway_example":"Exclude Motorway",
 "exclude_disneyland_paris_example":"Exclude Disneyland Paris",
 "simple_electric_car_example":"Simple Electric Car",

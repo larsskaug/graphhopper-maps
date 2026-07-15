@@ -133,6 +133,7 @@ export default function CustomModelBox({
                 >
                     <option value="default_example">{tr('examples_custom_model')}</option>
                     <option value="exclude_motorway">{tr('exclude_motorway_example')}</option>
+                    <option value="minimize_crash_risk">{tr('minimize_crash_risk_example')}</option>
                     <option value="exclude_disneyland_paris">{tr('exclude_disneyland_paris_example')}</option>
                     <option value="avoid_tunnels_bridges">{tr('avoid_tunnels_bridges_example')}</option>
                     <option value="simple_electric_car">{tr('simple_electric_car_example')}</option>
