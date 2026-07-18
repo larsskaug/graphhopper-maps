@@ -14,10 +14,9 @@ export const customModelExamples: { [key: string]: CustomModel } = {
         priority: [{ if: 'road_class == MOTORWAY', multiply_by: '0.0' }],
     },
     // A custom model that minimizes crash risk by deprioritizing roads with high crash risk
-    // Added by Lars Skaug on 2025-05-26
     minimize_crash_risk: {
-        priority: [{ if: 'true', multiply_by: '1 - road_risk' }]
-    },    
+        priority: [{ if: 'true', multiply_by: '1 - road_risk' }],
+    },
     avoid_tunnels_bridges: {
         priority: [{ if: 'road_environment == TUNNEL || road_environment == BRIDGE', multiply_by: '0.1' }],
     },

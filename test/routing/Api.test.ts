@@ -50,7 +50,7 @@ describe('info api', () => {
                     profiles: [],
                     elevation: expected.elevation,
                     encoded_values: expected.encoded_values,
-                }),
+                })
             )
         })
 
@@ -112,17 +112,7 @@ describe('route', () => {
             locale: 'en_US',
             points_encoded: true,
             points_encoded_multiplier: 1e6,
-            details: [
-                'road_class',
-                'road_environment',
-                'road_access',
-                'surface',
-                'max_speed',
-                'average_speed',
-                'toll',
-                'track_type',
-                'country',
-            ],
+            details: ['road_class', 'road_environment', 'surface', 'max_speed', 'average_speed', 'toll', 'track_type'],
         }
 
         const mockedDispatcher = jest.spyOn(Dispatcher, 'dispatch')
@@ -154,17 +144,7 @@ describe('route', () => {
             locale: 'en_US',
             points_encoded: true,
             points_encoded_multiplier: 1e6,
-            details: [
-                'road_class',
-                'road_environment',
-                'road_access',
-                'surface',
-                'max_speed',
-                'average_speed',
-                'toll',
-                'track_type',
-                'country',
-            ],
+            details: ['road_class', 'road_environment', 'surface', 'max_speed', 'average_speed', 'toll', 'track_type'],
             timeout_ms: 10000,
             'alternative_route.max_paths': args.maxAlternativeRoutes,
             algorithm: 'alternative_route',
@@ -206,17 +186,7 @@ describe('route', () => {
             locale: 'en_US',
             points_encoded: true,
             points_encoded_multiplier: 1e6,
-            details: [
-                'road_class',
-                'road_environment',
-                'road_access',
-                'surface',
-                'max_speed',
-                'average_speed',
-                'toll',
-                'track_type',
-                'country',
-            ],
+            details: ['road_class', 'road_environment', 'surface', 'max_speed', 'average_speed', 'toll', 'track_type'],
             custom_model: args.customModel!,
             'ch.disable': true,
             timeout_ms: 10000,
@@ -292,7 +262,7 @@ describe('route', () => {
         }
         fetchMock.mockResponse(() => Promise.resolve({ status: 500 }))
         await expect(new ApiImpl('https://some.api/', 'https://some.api/', 'key').route(args)).rejects.toThrow(
-            'Route calculation timed out',
+            'Route calculation timed out'
         )
     })
 
@@ -314,17 +284,7 @@ describe('route', () => {
             locale: 'de_DE',
             points_encoded: true,
             points_encoded_multiplier: 1e6,
-            details: [
-                'road_class',
-                'road_environment',
-                'road_access',
-                'surface',
-                'max_speed',
-                'average_speed',
-                'toll',
-                'track_type',
-                'country',
-            ],
+            details: ['road_class', 'road_environment', 'surface', 'max_speed', 'average_speed', 'toll', 'track_type'],
         }
 
         const mockedDispatcher = jest.spyOn(Dispatcher, 'dispatch')
