@@ -25,7 +25,7 @@ export default function usePathsLayer(map: Map, paths: Path[], selectedPath: Pat
         if (showPaths) {
             addUnselectedPathsLayer(
                 map,
-                paths.filter(p => p != selectedPath),
+                paths.filter(p => p != selectedPath)
             )
             addSelectedPathsLayer(map, selectedPath)
             addAccessNetworkLayer(map, selectedPath, queryPoints)
