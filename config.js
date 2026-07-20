@@ -8,6 +8,18 @@ const config = {
     routingApi: origin + '/',
     // the url of the geocoding backend, either use graphhopper.com or point it to another geocoding service. use an empty string to disable the address search
     geocodingApi: origin + '/',
+    // Optional: use a self-hosted Meilisearch (the address-poi-search service) for
+    // address + POI search instead of the GraphHopper/Photon geocoder. When set, all
+    // geocoding goes through Meilisearch's /multi-search (the `geocodingApi` above is
+    // then unused). Put the SEARCH-ONLY key here — never the master key — ideally in a
+    // git-ignored config-local.js. Document schema: address-poi-search/contract.json.
+    // geocoder: {
+    //     provider: 'meilisearch',
+    //     url: 'http://localhost:7700/',
+    //     key: 'PASTE_SEARCH_ONLY_KEY_HERE',
+    //     indexes: ['addresses', 'pois'],
+    //     limit: 8,
+    // },
     // the tile layer used by default, see MapOptionsStore.ts for all options
     defaultTiles: 'OpenStreetMap',
     // various api keys used for the GH backend and the different tile providers

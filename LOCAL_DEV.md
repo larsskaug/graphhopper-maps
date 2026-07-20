@@ -48,6 +48,34 @@ Check which details a graph supports with the `/info` endpoint
 time. Then `npm run serve` and open http://localhost:3000. Selecting `road_risk` in
 the path-detail graph visualises crash risk along the route.
 
+### Optional: address + POI search via `address-poi-search`
+
+Instead of setting start/end by right-clicking the map, run the sibling
+`../address-poi-search` Meilisearch (`docker compose up -d`, then `python index_addresses.py`
+/ `index_places.py`) and add a `geocoder` block to `config-local.js` — all forward geocoding
+then goes through Meilisearch's `/multi-search` (the `geocodingApi` value is unused), and the
+search box works despite GraphHopper having no geocoder:
+
+```js
+    geocoder: {
+        provider: 'meilisearch',
+        url: 'http://localhost:7700/',
+        key: '<SEARCH-ONLY key>', // actions:["search"] — NEVER the master key
+        indexes: ['addresses', 'pois'],
+        limit: 8,
+    },
+```
+
+Get a search-only key (the master key lives in `../address-poi-search/.env`):
+
+```bash
+curl -sS -H "Authorization: Bearer $(grep '^MEILI_MASTER_KEY=' \
+  ../address-poi-search/.env | cut -d= -f2-)" http://localhost:7700/keys \
+  | jq -r '.results[]|select(.name=="Default Search API Key").key'
+```
+
+The result schema each hit follows is pinned in `../address-poi-search/contract.json`.
+
 ## 3. Run `npm ci` after any dependency bump
 
 If the app fails to compile with type errors like

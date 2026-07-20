@@ -50,7 +50,7 @@ describe('info api', () => {
                     profiles: [],
                     elevation: expected.elevation,
                     encoded_values: expected.encoded_values,
-                })
+                }),
             )
         })
 
@@ -262,7 +262,7 @@ describe('route', () => {
         }
         fetchMock.mockResponse(() => Promise.resolve({ status: 500 }))
         await expect(new ApiImpl('https://some.api/', 'https://some.api/', 'key').route(args)).rejects.toThrow(
-            'Route calculation timed out'
+            'Route calculation timed out',
         )
     })
 
@@ -298,6 +298,65 @@ describe('route', () => {
 
         expect(mockedDispatcher).toHaveBeenCalledTimes(1)
         expect(mockedDispatcher).toHaveBeenCalledWith(new RouteRequestSuccess(args, true, getEmptyResult()))
+    })
+})
+
+describe('geocode (meilisearch adapter)', () => {
+    it('builds a federated multi-search body over the given indexes', () => {
+        const body = ApiImpl.createMeiliMultiSearchBody('main', ['addresses', 'pois'], 8)
+        expect(body).toEqual({
+            federation: { limit: 8 },
+            queries: [
+                { indexUid: 'addresses', q: 'main' },
+                { indexUid: 'pois', q: 'main' },
+            ],
+        })
+    })
+
+    it('maps an address document to a GeocodingHit', () => {
+        const hit = ApiImpl.meiliHitToGeocodingHit({
+            id: 'abc',
+            kind: 'address',
+            name: '2865 MAIN STREET, OH 45439',
+            street: 'MAIN STREET',
+            housenumber: '2865',
+            city: '',
+            state: 'OH',
+            postcode: '45439',
+            category: '',
+            _geo: { lat: 39.6886, lng: -84.2227 },
+        })!
+        expect(hit.point).toEqual({ lat: 39.6886, lng: -84.2227 })
+        expect(hit.street).toEqual('MAIN STREET')
+        expect(hit.housenumber).toEqual('2865')
+        expect(hit.state).toEqual('OH')
+        expect(hit.postcode).toEqual('45439')
+        expect(hit.osm_key).toEqual('place')
+        // a point has no extent; the adapter synthesizes a small bbox for map zoom
+        expect(hit.extent).toHaveLength(4)
+    })
+
+    it('maps a POI document to a GeocodingHit (category -> osm_value)', () => {
+        const hit = ApiImpl.meiliHitToGeocodingHit({
+            id: 'gers-1',
+            kind: 'poi',
+            name: 'The Cedar Coffee',
+            street: '',
+            housenumber: '',
+            city: 'New Paris',
+            state: 'OH',
+            postcode: '45347',
+            category: 'coffee_shop',
+            _geo: { lat: 39.86, lng: -84.79 },
+        })!
+        expect(hit.name).toEqual('The Cedar Coffee')
+        expect(hit.city).toEqual('New Paris')
+        expect(hit.osm_key).toEqual('amenity')
+        expect(hit.osm_value).toEqual('coffee_shop')
+    })
+
+    it('skips a document without a valid _geo', () => {
+        expect(ApiImpl.meiliHitToGeocodingHit({ kind: 'poi', name: 'x' })).toBeNull()
     })
 })
 

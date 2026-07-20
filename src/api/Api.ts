@@ -4,6 +4,7 @@ import {
     ApiInfo,
     Bbox,
     ErrorResponse,
+    GeocodingHit,
     GeocodingResult,
     Path,
     RawPath,
@@ -19,6 +20,7 @@ import { getTranslation, tr } from '@/translation/Translation'
 import * as config from 'config'
 import { POIQuery } from '@/pois/AddressParseResult'
 import { getMaxDistance } from '@/stores/QueryStore'
+import { getBBoxFromCoord } from '@/utils'
 
 interface ApiProfile {
     name: string
@@ -79,7 +81,7 @@ export class ApiImpl implements Api {
         } else {
             if (result.message) throw new Error(result.message)
             throw new Error(
-                'There has been an error. Server responded with ' + response.statusText + ' (' + response.status + ')'
+                'There has been an error. Server responded with ' + response.statusText + ' (' + response.status + ')',
             )
         }
     }
@@ -87,8 +89,11 @@ export class ApiImpl implements Api {
     async geocode(
         query: string,
         provider: string,
-        additionalOptions?: Record<string, string>
+        additionalOptions?: Record<string, string>,
     ): Promise<GeocodingResult> {
+        // A self-hosted Meilisearch geocoder, when configured, replaces the GH path
+        // entirely (the `provider` argument is a GH concept and does not apply here).
+        if (ApiImpl.isMeiliGeocoder()) return this.geocodeMeili(query)
         if (!this.supportsGeocoding())
             return {
                 hits: [],
@@ -120,6 +125,39 @@ export class ApiImpl implements Api {
         } else {
             throw new Error('Geocoding went wrong ' + response.status)
         }
+    }
+
+    /**
+     * Geocode against a self-hosted Meilisearch (the address-poi-search service):
+     * one federated /multi-search over the `addresses` + `pois` indexes, each hit
+     * mapped to a GeocodingHit. The document schema is pinned by the producer in
+     * address-poi-search/contract.json.
+     */
+    private async geocodeMeili(query: string): Promise<GeocodingResult> {
+        const cfg = config.geocoder
+        if (!cfg || query.trim().length === 0) return { hits: [], took: 0 }
+
+        const indexes = cfg.indexes && cfg.indexes.length > 0 ? cfg.indexes : ['addresses', 'pois']
+        const limit = cfg.limit ?? 8
+        const base = cfg.url.endsWith('/') ? cfg.url : cfg.url + '/'
+
+        const response = await fetch(base + 'multi-search', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                // SEARCH-ONLY key; the master key must never reach the browser.
+                Authorization: 'Bearer ' + cfg.key,
+            },
+            body: JSON.stringify(ApiImpl.createMeiliMultiSearchBody(query, indexes, limit)),
+        })
+
+        if (!response.ok) throw new Error('Geocoding went wrong ' + response.status)
+
+        const data = await response.json()
+        const rawHits = (data.hits ?? []) as any[]
+        const hits = rawHits.map(h => ApiImpl.meiliHitToGeocodingHit(h)).filter((h): h is GeocodingHit => h !== null)
+        return { hits, took: data.processingTimeMs ?? 0 }
     }
 
     async reverseGeocode(query: POIQuery, bbox: Bbox): Promise<ReverseGeocodingHit[]> {
@@ -186,7 +224,7 @@ export class ApiImpl implements Api {
     }
 
     supportsGeocoding(): boolean {
-        return this.geocodingApi !== ''
+        return ApiImpl.isMeiliGeocoder() || this.geocodingApi !== ''
     }
 
     async route(args: RoutingArgs): Promise<RoutingResult> {
@@ -439,6 +477,45 @@ export class ApiImpl implements Api {
             } else array.push([lng / multiplier, lat / multiplier])
         }
         return array
+    }
+
+    static isMeiliGeocoder(): boolean {
+        const cfg = config.geocoder
+        return !!cfg && cfg.provider === 'meilisearch' && !!cfg.url && !!cfg.key
+    }
+
+    static createMeiliMultiSearchBody(query: string, indexes: string[], limit: number) {
+        // Federated multi-search returns one merged, relevance-ranked list across the
+        // address + POI indexes; each doc's `kind` field discriminates the two.
+        return {
+            federation: { limit },
+            queries: indexes.map(indexUid => ({ indexUid, q: query })),
+        }
+    }
+
+    static meiliHitToGeocodingHit(doc: any): GeocodingHit | null {
+        const lat = doc?._geo?.lat
+        const lng = doc?._geo?.lng
+        if (typeof lat !== 'number' || typeof lng !== 'number') return null
+        const point = { lat, lng }
+        const isPoi = doc.kind === 'poi'
+        return {
+            point,
+            // a point has no real extent; a small bbox lets the map zoom sensibly
+            extent: getBBoxFromCoord(point),
+            osm_id: String(doc.id ?? ''),
+            // synthesized: Meilisearch has no OSM identity. Only used for icon hints.
+            osm_type: isPoi ? 'node' : 'way',
+            osm_key: isPoi ? 'amenity' : 'place',
+            osm_value: isPoi ? doc.category || 'yes' : 'house',
+            name: doc.name ?? '',
+            country: '',
+            city: doc.city ?? '',
+            state: doc.state ?? '',
+            street: doc.street ?? '',
+            housenumber: doc.housenumber ?? '',
+            postcode: doc.postcode ?? '',
+        }
     }
 
     public static isFootLike(profile: string) {
