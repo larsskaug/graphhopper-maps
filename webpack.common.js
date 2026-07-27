@@ -54,7 +54,7 @@ module.exports = {
                             modules: {
                                 localIdentName: '[path][name]__[local]',
                                 namedExport: false,
-                                exportLocalsConvention: 'as-is',
+                                exportLocalsConvention: 'asIs',
                             },
                         },
                     },

@@ -1,11 +1,25 @@
 /**
  * Webpack will replace this file with config-local.js if it exists
  */
+// same-origin by default; guard for non-browser envs (e.g. jest) where window is undefined
+const origin = typeof window !== 'undefined' ? window.location.origin : ''
 const config = {
     // the url of the GraphHopper routing backend, either use graphhopper.com or point it to your own GH instance
-    routingApi: 'https://graphhopper.com/api/1/',
+    routingApi: origin + '/',
     // the url of the geocoding backend, either use graphhopper.com or point it to another geocoding service. use an empty string to disable the address search
-    geocodingApi: 'https://graphhopper.com/api/1/',
+    geocodingApi: origin + '/',
+    // Optional: use a self-hosted Meilisearch (the roadrisk-platform/search service) for
+    // address + POI search instead of the GraphHopper/Photon geocoder. When set, all
+    // geocoding goes through Meilisearch's /multi-search (the `geocodingApi` above is
+    // then unused). Put the SEARCH-ONLY key here — never the master key — ideally in a
+    // git-ignored config-local.js. Document schema: roadrisk-platform/search/contract.json.
+    // geocoder: {
+    //     provider: 'meilisearch',
+    //     url: 'http://localhost:7700/',
+    //     key: 'PASTE_SEARCH_ONLY_KEY_HERE',
+    //     indexes: ['addresses', 'pois'],
+    //     limit: 8,
+    // },
     // the tile layer used by default, see MapOptionsStore.ts for all options
     defaultTiles: 'OpenStreetMap',
     // various api keys used for the GH backend and the different tile providers
@@ -21,17 +35,7 @@ const config = {
     routingGraphLayerAllowed: false,
     // parameters used for the routing request generation
     request: {
-        details: [
-            'road_class',
-            'road_environment',
-            'road_access',
-            'surface',
-            'max_speed',
-            'average_speed',
-            'toll',
-            'track_type',
-            'country',
-        ],
+        details: ['road_class', 'road_environment', 'surface', 'max_speed', 'average_speed', 'toll', 'track_type'],
     },
 
     // Use 'profiles' to define which profiles are visible and how. Useful if the /info endpoint contains too many or too "ugly" profile

@@ -11,6 +11,18 @@ declare module 'config' {
 
     const routingApi: string
     const geocodingApi: string
+    // Optional self-hosted geocoder (the roadrisk-platform/search Meilisearch service).
+    // When present, all geocoding goes through Meilisearch /multi-search instead of
+    // the GraphHopper/Photon backend. See roadrisk-platform/search/contract.json.
+    const geocoder:
+        | {
+              provider: 'meilisearch'
+              url: string
+              key: string // SEARCH-ONLY key, never the master key
+              indexes?: string[] // default ['addresses', 'pois']
+              limit?: number // default 8
+          }
+        | undefined
     const defaultTiles: string
     const keys: {
         graphhopper: string
