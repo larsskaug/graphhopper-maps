@@ -128,10 +128,10 @@ export class ApiImpl implements Api {
     }
 
     /**
-     * Geocode against a self-hosted Meilisearch (the address-poi-search service):
+     * Geocode against a self-hosted Meilisearch (the roadrisk-platform/search service):
      * one federated /multi-search over the `addresses` + `pois` indexes, each hit
      * mapped to a GeocodingHit. The document schema is pinned by the producer in
-     * address-poi-search/contract.json.
+     * roadrisk-platform/search/contract.json.
      */
     private async geocodeMeili(query: string): Promise<GeocodingResult> {
         const cfg = config.geocoder

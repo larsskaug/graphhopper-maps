@@ -15,7 +15,7 @@ cross-origin without a proxy.
 ## 2. Point the UI at it via `config-local.js`
 
 The committed `config.js` uses same-origin URLs (`window.location.origin`), which
-assume the UI is served *by* GraphHopper. For local development with `npm run serve`
+assume the UI is served _by_ GraphHopper. For local development with `npm run serve`
 (which runs on `:3000`), create a **`config-local.js`** — it is git-ignored and
 overrides `config.js` (see `webpack.common.js`). Minimal example:
 
@@ -26,8 +26,14 @@ const config = {
     // start/end by right-clicking the map instead
     geocodingApi: '',
     defaultTiles: 'OpenStreetMap',
-    keys: { graphhopper: '<key>', maptiler: 'missing_api_key', omniscale: 'missing_api_key',
-            thunderforest: 'missing_api_key', kurviger: 'missing_api_key', tracestrack: 'missing_api_key' },
+    keys: {
+        graphhopper: '<key>',
+        maptiler: 'missing_api_key',
+        omniscale: 'missing_api_key',
+        thunderforest: 'missing_api_key',
+        kurviger: 'missing_api_key',
+        tracestrack: 'missing_api_key',
+    },
     routingGraphLayerAllowed: false,
     request: {
         // IMPORTANT: only request path details the graph actually imported.
@@ -48,10 +54,10 @@ Check which details a graph supports with the `/info` endpoint
 time. Then `npm run serve` and open http://localhost:3000. Selecting `road_risk` in
 the path-detail graph visualises crash risk along the route.
 
-### Optional: address + POI search via `address-poi-search`
+### Optional: address + POI search via `roadrisk-platform/search`
 
 Instead of setting start/end by right-clicking the map, run the sibling
-`../address-poi-search` Meilisearch (`docker compose up -d`, then `python index_addresses.py`
+`../roadrisk-platform/search` Meilisearch (`docker compose up -d`, then `python index_addresses.py`
 / `index_places.py`) and add a `geocoder` block to `config-local.js` — all forward geocoding
 then goes through Meilisearch's `/multi-search` (the `geocodingApi` value is unused), and the
 search box works despite GraphHopper having no geocoder:
@@ -66,15 +72,15 @@ search box works despite GraphHopper having no geocoder:
     },
 ```
 
-Get a search-only key (the master key lives in `../address-poi-search/.env`):
+Get a search-only key (the master key lives in `../roadrisk-platform/search/.env`):
 
 ```bash
 curl -sS -H "Authorization: Bearer $(grep '^MEILI_MASTER_KEY=' \
-  ../address-poi-search/.env | cut -d= -f2-)" http://localhost:7700/keys \
+  ../roadrisk-platform/search/.env | cut -d= -f2-)" http://localhost:7700/keys \
   | jq -r '.results[]|select(.name=="Default Search API Key").key'
 ```
 
-The result schema each hit follows is pinned in `../address-poi-search/contract.json`.
+The result schema each hit follows is pinned in `../roadrisk-platform/search/contract.json`.
 
 ## 3. Run `npm ci` after any dependency bump
 
@@ -83,5 +89,5 @@ If the app fails to compile with type errors like
 `RefObject<HTMLDivElement | null>' is not assignable to 'LegacyRef<...>'`, the cause
 is usually a **stale `node_modules`**: the manifest and lockfile were bumped (e.g. #433
 moved to React 19 / OpenLayers 10.6 / css-loader 7) but the install was never
-refreshed. The code is correct for the *declared* versions — run `npm ci` to install
+refreshed. The code is correct for the _declared_ versions — run `npm ci` to install
 them, don't patch the annotations.

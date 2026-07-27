@@ -11,9 +11,9 @@ declare module 'config' {
 
     const routingApi: string
     const geocodingApi: string
-    // Optional self-hosted geocoder (the address-poi-search Meilisearch service).
+    // Optional self-hosted geocoder (the roadrisk-platform/search Meilisearch service).
     // When present, all geocoding goes through Meilisearch /multi-search instead of
-    // the GraphHopper/Photon backend. See address-poi-search/contract.json.
+    // the GraphHopper/Photon backend. See roadrisk-platform/search/contract.json.
     const geocoder:
         | {
               provider: 'meilisearch'
